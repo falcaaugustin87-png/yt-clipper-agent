@@ -24,7 +24,7 @@ for (const bin of ['yt-dlp', 'ffmpeg']) {
 
 // -- 2. Video info
 console.log('[1/5] Fetching video info...');
-const info = JSON.parse(run(`node src/info.js "${url}")`));
+const info = JSON.parse(run(`node src/info.js "${url}"`))
 console.log(`  ${info.title} [${info.type}]`);
 if (vertical) console.log('  Output: 9:16 vertical (blur background)');
 
@@ -34,7 +34,7 @@ mkdirSync('clips', { recursive: true });
 console.log('[2/5] Downloading transcript...');
 let transcript = [];
 try {
-  transcript = JSON.parse(run(`node src/transcript.js "${url}")`));
+  transcript = JSON.parse(run(`node src/transcript.js "${url}"`));
   console.log(`  ${transcript.length} subtitle segments`);
 } catch {
   console.log('  No subtitles - will sample evenly');
@@ -45,7 +45,7 @@ let chat = [];
 if (info.type === 'ended') {
   console.log('[+] Downloading chat replay...');
   try {
-    chat = JSON.parse(run(`node src/chat.js "${url}")`));
+    chat = JSON.parse(run(`node src/chat.js "${url}"`));
     console.log(`  ${chat.length} chat messages`);
   } catch {
     console.log('  No chat replay available');
@@ -65,8 +65,8 @@ const chatText = chat.length
   : '';
 
 const dur = info.duration ?? 600;
-const skipStart = Math.min(30, dur * 0.05);  // skip first 30s (intro/logo)
-const skipEnd   = Math.max(0, dur - Math.min(30, dur * 0.05));  // skip last 30s (outro)
+const skipStart = Math.min(30, dur * 0.05);
+const skipEnd   = Math.max(0, dur - Math.min(30, dur * 0.05));
 
 const prompt = `You are a video clip editor creating viral short clips for TikTok, YouTube Shorts and Instagram Reels.
 Analyze this ${
