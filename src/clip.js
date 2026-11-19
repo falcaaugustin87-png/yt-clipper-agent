@@ -9,8 +9,8 @@ import { existsSync, mkdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import Anthropic from '@anthropic-ai/sdk';
 
-const url    = process.argv[2];
-const keep   = process.argv.includes('--keep-raw');
+const url      = process.argv[2];
+const keep     = process.argv.includes('--keep-raw');
 const vertical = process.argv.includes('--vertical');
 if (!url) { console.error('Usage: node src/clip.js <URL> [--keep-raw] [--vertical]'); process.exit(1); }
 
@@ -64,23 +64,33 @@ const chatText = chat.length
   ? chat.slice(0, 2000).map(m => `[${m.time.toFixed(0)}s] ${m.author}: ${m.message}${m.superChat ? ' $' : ''}`).join('\n')
   : '';
 
-const prompt = `You are a video clip editor. Analyze this ${
+const dur = info.duration ?? 600;
+const skipStart = Math.min(30, dur * 0.05);  // skip first 30s (intro/logo)
+const skipEnd   = Math.max(0, dur - Math.min(30, dur * 0.05));  // skip last 30s (outro)
+
+const prompt = `You are a video clip editor creating viral short clips for TikTok, YouTube Shorts and Instagram Reels.
+Analyze this ${
   info.type === 'live' ? 'live stream' : info.type === 'ended' ? 'ended live stream' : 'video'
 } and find the 6 best moments to clip.
 
 Video: "${info.title}"
-Duration: ${info.duration ? Math.round(info.duration) + 's' : 'unknown'}
+Duration: ${Math.round(dur)}s
+
+STRICT RULES - follow these exactly:
+- Each clip must be 15-60 seconds long
+- NEVER start before ${Math.round(skipStart)}s (intro with logos)
+- NEVER go past ${Math.round(skipEnd)}s (outro with logos/music)
+- AVOID any segment where background music is playing (copyright risk)
+- AVOID any segment showing company logos or branding screens
+- AVOID segments that are only text/menu screens with no gameplay
+- PREFER: clutch plays, funny moments, fails, big reactions, surprising reveals, hype peaks
+- Each clip must make sense on its own without context
+- For streams: weight moments where chat went crazy (caps, emotes, "WHAT", "???")
 
 TRANSCRIPT:
 ${transcriptText.slice(0, 8000)}
 
 ${chatText ? `CHAT REPLAY (shows viewer reactions):\n${chatText.slice(0, 4000)}` : ''}
-
-Rules:
-- Each clip must be 15-60 seconds
-- Look for: clutch plays, funny moments, fails, reveals, big reactions, hype peaks
-- For streams: weight moments where chat went crazy (lots of caps, emotes, "WHAT", "???")
-- Each clip must be self-contained and make sense without context
 
 Return ONLY valid JSON - an array of exactly 6 objects:
 [
@@ -100,10 +110,10 @@ try {
   moments = JSON.parse(jsonMatch[0]);
 } catch {
   console.log('  Analysis fallback - using even intervals');
-  const dur = info.duration ?? 600;
-  const step = Math.floor(dur / 6);
+  const step = Math.floor((skipEnd - skipStart) / 6);
   moments = Array.from({ length: 6 }, (_, i) => ({
-    start: i * step, end: i * step + 30,
+    start: skipStart + i * step,
+    end: skipStart + i * step + 30,
     reason: `segment ${i + 1} (unranked)`, score: 5,
   }));
 }
