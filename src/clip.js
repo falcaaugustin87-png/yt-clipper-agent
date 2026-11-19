@@ -21,26 +21,26 @@ for (const bin of ['yt-dlp', 'ffmpeg']) {
 }
 
 // ── 2. Video info ────────────────────────────────────────────────────────────
-process.stdout.write('● Fetching video info…\n');
+console.log('[1/5] Fetching video info...');
 const info = JSON.parse(run(`node src/info.js "${url}"`));
 console.log(`  ${info.title} [${info.type}]`);
 
 mkdirSync('clips', { recursive: true });
 
 // ── 3. Transcript ────────────────────────────────────────────────────────────
-process.stdout.write('● Downloading transcript…\n');
+console.log('[2/5] Downloading transcript...');
 let transcript = [];
 try {
   transcript = JSON.parse(run(`node src/transcript.js "${url}"`));
   console.log(`  ${transcript.length} subtitle segments`);
 } catch {
-  console.log('  No subtitles — will sample evenly');
+  console.log('  No subtitles - will sample evenly');
 }
 
 // ── 4. Chat replay (ended streams) ──────────────────────────────────────────
 let chat = [];
 if (info.type === 'ended') {
-  process.stdout.write('● Downloading chat replay…\n');
+  console.log('[+] Downloading chat replay...');
   try {
     chat = JSON.parse(run(`node src/chat.js "${url}"`));
     console.log(`  ${chat.length} chat messages`);
@@ -50,7 +50,7 @@ if (info.type === 'ended') {
 }
 
 // ── 5. Analyze with Claude ───────────────────────────────────────────────────
-process.stdout.write('● Analyzing for best moments…\n');
+console.log('[3/5] Analyzing for best moments...');
 const client = new Anthropic();
 
 const transcriptText = transcript.length
@@ -109,12 +109,12 @@ console.log(`  ${moments.length} moments identified`);
 // ── 6. Download video ────────────────────────────────────────────────────────
 const rawPath = join('clips', `raw_${info.id}.mp4`);
 if (!existsSync(rawPath)) {
-  process.stdout.write('● Downloading video…\n');
+  console.log('[4/5] Downloading video...');
   execSync(`node src/download.js "${url}" "${rawPath}"`, { stdio: 'inherit' });
 }
 
 // ── 7. Cut clips ─────────────────────────────────────────────────────────────
-process.stdout.write('● Cutting clips…\n');
+console.log('[5/5] Cutting clips...');
 const clips = [];
 for (let i = 0; i < moments.length; i++) {
   const m = moments[i];
@@ -134,7 +134,7 @@ const fmt = s => {
   return `${m}:${String(sec).padStart(2, '0')}`;
 };
 
-console.log(`\n✓  ${clips.length} clips ready · ranked best first\n`);
+console.log(`\nDone! ${clips.length} clips ready - ranked best first\n`);
 clips.forEach((c, i) => {
   console.log(`  ${i + 1}. ${c.file.padEnd(40)} [${fmt(c.start)}–${fmt(c.end)}]  score ${c.score}  — ${c.reason}`);
 });
