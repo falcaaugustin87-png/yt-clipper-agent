@@ -37,6 +37,16 @@ echo "[$(date)] Processing: $LATEST_URL"
 # Always output 9:16 vertical for Shorts/Reels/TikTok
 node src/clip.js "$LATEST_URL" --vertical
 
+# Upload clips to Google Drive
+DRIVE_FOLDER="gdrive:yt-clips/$(date +%Y-%m-%d)"
+echo "[$(date)] Uploading clips to Google Drive: $DRIVE_FOLDER"
+rclone copy clips/ "$DRIVE_FOLDER" --include "*.mp4" --progress 2>&1
+if [ $? -eq 0 ]; then
+  echo "[$(date)] Upload complete: $DRIVE_FOLDER"
+else
+  echo "[$(date)] Upload failed — clips are still saved locally"
+fi
+
 # Auto-cleanup: delete clips older than 7 days to save space
 find "$(dirname "$0")/clips" -name "*.mp4" -mtime +7 -delete 2>/dev/null
 
