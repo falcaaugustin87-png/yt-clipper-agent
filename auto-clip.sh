@@ -2,6 +2,7 @@
 # Auto-Clipper: lädt, schneidet und uploaded alles zu Google Drive
 set -e
 
+COOKIES="$HOME/yt-clipper-agent/cookies.txt"
 DRIVE_FOLDER="gdrive:yt-clips/politik-news-$(date +%Y-%m-%d)"
 
 VIDEOS=(
@@ -25,7 +26,7 @@ for i in "${!VIDEOS[@]}"; do
   NUM=$((i + 1))
   echo ""
   echo "[$NUM/${#VIDEOS[@]}] $URL"
-  node src/clip.js "$URL" || echo "  Fehler bei $URL — weiter..."
+  node src/clip.js "$URL" --cookies "$COOKIES" || echo "  Fehler bei $URL — weiter..."
 done
 
 echo ""
