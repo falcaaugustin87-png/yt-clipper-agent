@@ -22,9 +22,10 @@ if (!url || !out) {
 mkdirSync(dirname(out), { recursive: true });
 
 const ytdlpArgs = [
-  '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best',
+  '-f', 'bestvideo+bestaudio/best',
   '--merge-output-format', 'mp4',
   '--no-playlist',
+  '--audio-multistreams',
   '-o', out,
 ];
 if (cookiesFile) ytdlpArgs.push('--cookies', cookiesFile);
