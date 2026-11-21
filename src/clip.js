@@ -12,7 +12,9 @@ import Anthropic from '@anthropic-ai/sdk';
 const url      = process.argv[2];
 const keep     = process.argv.includes('--keep-raw');
 const vertical = process.argv.includes('--vertical');
-if (!url) { console.error('Usage: node src/clip.js <URL> [--keep-raw] [--vertical]'); process.exit(1); }
+const cookiesIdx = process.argv.indexOf('--cookies');
+const cookies  = cookiesIdx !== -1 ? process.argv[cookiesIdx + 1] : null;
+if (!url) { console.error('Usage: node src/clip.js <URL> [--keep-raw] [--vertical] [--cookies <file>]'); process.exit(1); }
 
 const run = cmd => execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'inherit'] });
 
@@ -124,7 +126,8 @@ console.log(`  ${moments.length} moments identified`);
 const rawPath = join('clips', `raw_${info.id}.mp4`);
 if (!existsSync(rawPath)) {
   console.log('[4/5] Downloading video...');
-  execSync(`node src/download.js "${url}" "${rawPath}"`, { stdio: 'inherit' });
+  const cookiesArg = cookies ? ` --cookies "${cookies}"` : '';
+  execSync(`node src/download.js "${url}" "${rawPath}"${cookiesArg}`, { stdio: 'inherit' });
 }
 
 // -- 7. Cut clips
