@@ -126,6 +126,11 @@ try {
   }));
 }
 
+// For very short videos, output the whole video as one clip
+if (moments.length === 0 && dur <= 60) {
+  moments = [{ start: 0, end: dur, hook: 'full video', reason: 'short video — full clip', score: 10 }];
+}
+
 console.log(`  ${moments.length} moments identified`);
 
 // -- 6. Download video
