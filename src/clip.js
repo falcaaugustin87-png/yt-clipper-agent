@@ -70,24 +70,28 @@ const dur = info.duration ?? 600;
 const skipStart = Math.min(30, dur * 0.05);
 const skipEnd   = Math.max(0, dur - Math.min(30, dur * 0.05));
 
-const prompt = `You are a video clip editor creating viral short clips for TikTok, YouTube Shorts and Instagram Reels.
+const prompt = `You are a viral short-form video editor specializing in TikTok, YouTube Shorts and Instagram Reels.
 Analyze this ${
   info.type === 'live' ? 'live stream' : info.type === 'ended' ? 'ended live stream' : 'video'
-} and find the 6 best moments to clip.
+} and find the 6 best 15-second moments with strong viral hooks.
 
 Video: "${info.title}"
 Duration: ${Math.round(dur)}s
 
 STRICT RULES - follow these exactly:
-- Each clip must be 15-60 seconds long
-- NEVER start before ${Math.round(skipStart)}s (intro with logos)
-- NEVER go past ${Math.round(skipEnd)}s (outro with logos/music)
-- AVOID any segment where background music is playing (copyright risk)
-- AVOID any segment showing company logos or branding screens
-- AVOID segments that are only text/menu screens with no gameplay
-- PREFER: clutch plays, funny moments, fails, big reactions, surprising reveals, hype peaks
+- Each clip must be EXACTLY 15 seconds long (end = start + 15)
+- NEVER start before ${Math.round(skipStart)}s (intro)
+- NEVER go past ${Math.round(skipEnd)}s (outro)
+- Each clip MUST start with a viral hook — a moment that grabs attention in the first 2 seconds:
+  * A shocking statement or revelation
+  * A strong emotional reaction (anger, disbelief, laughter, shock)
+  * A controversial or surprising opinion
+  * A powerful quote or one-liner
+  * A heated argument or confrontation
+  * A "wait what?" or unexpected moment
+- PREFER: moments where someone says something bold, surprising, emotional or controversial
 - Each clip must make sense on its own without context
-- For streams: weight moments where chat went crazy (caps, emotes, "WHAT", "???")
+- For news/politics: find the most dramatic, emotional or controversial statements
 
 TRANSCRIPT:
 ${transcriptText.slice(0, 8000)}
@@ -96,9 +100,9 @@ ${chatText ? `CHAT REPLAY (shows viewer reactions):\n${chatText.slice(0, 4000)}`
 
 Return ONLY valid JSON - an array of exactly 6 objects:
 [
-  { "start": <seconds>, "end": <seconds>, "reason": "<short description>", "score": <1-10> }
+  { "start": <seconds>, "end": <seconds>, "hook": "<the opening hook in 1 sentence>", "reason": "<why this goes viral>", "score": <1-10> }
 ]
-Sorted by score descending.`;
+Note: end must always equal start + 15. Sorted by score descending.`;
 
 const response = await client.messages.create({
   model: 'claude-opus-4-5',
@@ -115,7 +119,8 @@ try {
   const step = Math.floor((skipEnd - skipStart) / 6);
   moments = Array.from({ length: 6 }, (_, i) => ({
     start: skipStart + i * step,
-    end: skipStart + i * step + 30,
+    end: skipStart + i * step + 15,
+    hook: `segment ${i + 1}`,
     reason: `segment ${i + 1} (unranked)`, score: 5,
   }));
 }
