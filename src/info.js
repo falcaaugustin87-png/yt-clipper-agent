@@ -14,7 +14,7 @@ if (!url) { console.error('Usage: node src/info.js <URL> [--cookies <file>]'); p
 const cookiesArg = cookies ? `--cookies "${cookies}" ` : '';
 let raw;
 try {
-  raw = execSync(`yt-dlp ${cookiesArg}--print-json --skip-download --no-playlist "${url}"`, {
+  raw = execSync(`yt-dlp ${cookiesArg}--extractor-args "youtube:player_client=web_embedded,android_vr" --print-json --skip-download --no-playlist "${url}"`, {
     encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30_000,
   });
 } catch (e) {

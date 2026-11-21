@@ -22,6 +22,7 @@ if (!url || !out) {
 mkdirSync(dirname(out), { recursive: true });
 
 const ytdlpArgs = [
+  '--extractor-args', 'youtube:player_client=web_embedded,android_vr',
   '-f', 'bestvideo+bestaudio/best',
   '--merge-output-format', 'mp4',
   '--no-playlist',
