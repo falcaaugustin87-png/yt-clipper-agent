@@ -2,7 +2,24 @@
 # Auto-Clipper: lädt, schneidet und uploaded alles zu Google Drive
 set -e
 
-COOKIES="$HOME/yt-clipper-agent/cookies.txt"
+# Cookies automatisch finden (Chromebook oder Linux)
+if [ -f "$HOME/yt-clipper-agent/cookies.txt" ]; then
+  COOKIES="$HOME/yt-clipper-agent/cookies.txt"
+elif ls /mnt/chromeos/MyFiles/Downloads/*cookies* 2>/dev/null | head -1 | grep -q .; then
+  COOKIES=$(ls /mnt/chromeos/MyFiles/Downloads/*cookies* 2>/dev/null | head -1)
+  cp "$COOKIES" "$HOME/yt-clipper-agent/cookies.txt"
+  COOKIES="$HOME/yt-clipper-agent/cookies.txt"
+elif ls "$HOME/Downloads/"*cookies* 2>/dev/null | head -1 | grep -q .; then
+  COOKIES=$(ls "$HOME/Downloads/"*cookies* 2>/dev/null | head -1)
+  cp "$COOKIES" "$HOME/yt-clipper-agent/cookies.txt"
+  COOKIES="$HOME/yt-clipper-agent/cookies.txt"
+else
+  echo "FEHLER: cookies.txt nicht gefunden!"
+  echo "Bitte exportiere cookies.txt nach /mnt/chromeos/MyFiles/Downloads/"
+  exit 1
+fi
+echo "  Cookies: $COOKIES"
+
 DRIVE_FOLDER="gdrive:yt-clips/politik-news-$(date +%Y-%m-%d)"
 
 VIDEOS=(
