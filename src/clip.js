@@ -26,7 +26,8 @@ for (const bin of ['yt-dlp', 'ffmpeg']) {
 
 // -- 2. Video info
 console.log('[1/5] Fetching video info...');
-const info = JSON.parse(run(`node src/info.js "${url}"`))
+const cookiesFlag = cookies ? ` --cookies "${cookies}"` : '';
+const info = JSON.parse(run(`node src/info.js "${url}"${cookiesFlag}`))
 console.log(`  ${info.title} [${info.type}]`);
 if (vertical) console.log('  Output: 9:16 vertical (blur background)');
 
@@ -36,7 +37,7 @@ mkdirSync('clips', { recursive: true });
 console.log('[2/5] Downloading transcript...');
 let transcript = [];
 try {
-  transcript = JSON.parse(run(`node src/transcript.js "${url}"`));
+  transcript = JSON.parse(run(`node src/transcript.js "${url}"${cookiesFlag}`));
   console.log(`  ${transcript.length} subtitle segments`);
 } catch {
   console.log('  No subtitles - will sample evenly');

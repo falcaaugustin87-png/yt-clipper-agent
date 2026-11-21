@@ -7,11 +7,14 @@
 import { execSync } from 'child_process';
 
 const url = process.argv[2];
-if (!url) { console.error('Usage: node src/info.js <URL>'); process.exit(1); }
+const cookiesIdx = process.argv.indexOf('--cookies');
+const cookies = cookiesIdx !== -1 ? process.argv[cookiesIdx + 1] : null;
+if (!url) { console.error('Usage: node src/info.js <URL> [--cookies <file>]'); process.exit(1); }
 
+const cookiesArg = cookies ? `--cookies "${cookies}" ` : '';
 let raw;
 try {
-  raw = execSync(`yt-dlp --print-json --skip-download --no-playlist "${url}"`, {
+  raw = execSync(`yt-dlp ${cookiesArg}--print-json --skip-download --no-playlist "${url}"`, {
     encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30_000,
   });
 } catch (e) {

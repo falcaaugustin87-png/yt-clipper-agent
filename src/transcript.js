@@ -11,20 +11,24 @@ import { tmpdir } from 'os';
 import { mkdtempSync } from 'fs';
 
 const url = process.argv[2];
-if (!url) { console.error('Usage: node src/transcript.js <URL>'); process.exit(1); }
+const cookiesIdx = process.argv.indexOf('--cookies');
+const cookies = cookiesIdx !== -1 ? process.argv[cookiesIdx + 1] : null;
+if (!url) { console.error('Usage: node src/transcript.js <URL> [--cookies <file>]'); process.exit(1); }
 
 const dir = mkdtempSync(join(tmpdir(), 'yt-subs-'));
 
-// Try manual subs first, fall back to auto-generated
-const result = spawnSync('yt-dlp', [
+const ytdlpArgs = [
   '--write-subs', '--write-auto-subs',
   '--skip-download',
-  '--sub-lang', 'en',
+  '--sub-lang', 'de,en',
   '--sub-format', 'vtt',
   '--output', join(dir, '%(id)s.%(ext)s'),
   '--no-playlist',
-  url,
-], { encoding: 'utf8', timeout: 60_000 });
+];
+if (cookies) ytdlpArgs.push('--cookies', cookies);
+ytdlpArgs.push(url);
+
+const result = spawnSync('yt-dlp', ytdlpArgs, { encoding: 'utf8', timeout: 60_000 });
 
 if (result.status !== 0) {
   console.error('yt-dlp subtitle download failed:', result.stderr);
