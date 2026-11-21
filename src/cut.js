@@ -40,7 +40,7 @@ if (vertical) {
   ].join(';');
   filterArgs = ['-vf', vf, '-c:v', 'libx264', '-crf', '18', '-preset', 'fast', '-c:a', 'aac'];
 } else {
-  filterArgs = ['-c', 'copy', '-avoid_negative_ts', 'make_zero'];
+  filterArgs = ['-map', '0:v:0', '-map', '0:a:0', '-c', 'copy', '-avoid_negative_ts', 'make_zero'];
 }
 
 const result = spawnSync('ffmpeg', [...baseArgs, ...filterArgs, output], {
@@ -55,6 +55,7 @@ if (result.status !== 0 && !vertical) {
     '-ss', String(start),
     '-i', input,
     '-t', String(duration),
+    '-map', '0:v:0', '-map', '0:a:0',
     '-c:v', 'libx264', '-crf', '18', '-preset', 'fast',
     '-c:a', 'aac',
     output,
