@@ -7,7 +7,8 @@
     "clip": "node src/clip.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.55.0"
+    "@anthropic-ai/sdk": "^0.55.0",
+    "lemo": "^0.0.0"
   },
   "engines": {
     "node": ">=20"
